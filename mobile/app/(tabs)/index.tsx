@@ -1,98 +1,108 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+// 1. Importe os componentes corretos do react-native
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
+// 2. Use o Link do EXPO ROUTER (que usa 'href', não 'to')
 import { Link } from 'expo-router';
+
+// Seus dados (estão perfeitos)
+const PRODUCTS_DATA = [
+  { id: 1, name: 'Teclado', quantity: 8, price: '299,00' },
+  { id: 2, name: 'Mouse sem fio', quantity: 10, price: '250,00' },
+  { id: 3, name: 'Headset', quantity: 5, price: '399,00' },
+];
+
+// REMOVIDOS: 'react-bootstrap/Table' e 'react-router-dom'
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+      // 3. Use ScrollView para listas e View como contêiner principal
+      <ScrollView style={styles.container}>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* 4. Tabela é feita com Views. Esta é a linha do CABEÇALHO */}
+        <View style={styles.tableRowHeader}>
+          {/* 5. Estilos vêm do StyleSheet. 'cabecalho' virou 'tableHeader' */}
+          <Text style={[styles.tableHeader, styles.cellId]}>ID</Text>
+          <Text style={[styles.tableHeader, styles.cellName]}>Nome produto</Text>
+          <Text style={[styles.tableHeader, styles.cellQtd]}>Qtd</Text>
+          <Text style={[styles.tableHeader, styles.cellPrice]}>Preço</Text>
+        </View>
+
+        {/* 6. Mapeie os dados para criar as LINHAS da tabela */}
+        {PRODUCTS_DATA.map((product) => (
+            <View style={styles.tableRow} key={product.id}>
+
+              {/* Células de dados */}
+              <Text style={[styles.tableCell, styles.cellId]}>{product.id}</Text>
+
+              {/* 7. Célula do Link */}
+              <View style={[styles.tableCell, styles.cellName]}>
+                {/* O Link do Expo usa 'href' e 'asChild' para estilizar o Text */}
+                <Link href={`/produto/${product.id}`} asChild>
+                  <Text style={styles.linkText}>{product.name}</Text>
+                </Link>
+              </View>
+
+              <Text style={[styles.tableCell, styles.cellQtd]}>{product.quantity}</Text>
+              <Text style={[styles.tableCell, styles.cellPrice]}>{product.price}</Text>
+            </View>
+        ))}
+      </ScrollView>
   );
 }
 
+// 8. Defina TODOS os seus estilos aqui
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  tableRowHeader: {
+    flexDirection: 'row', // Alinha os itens lado a lado
+    backgroundColor: '#f1f1f1', // Um fundo para o cabeçalho
+    borderBottomWidth: 2,
+    borderColor: '#ddd',
+    paddingVertical: 8,
+  },
+  tableRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    paddingVertical: 10,
+    alignItems: 'center', // Alinha verticalmente
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  tableHeader: {
+    fontWeight: 'bold', // Seu estilo 'cabecalho'
+    fontSize: 15,
+    color: '#333',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  tableCell: {
+    fontSize: 14,
+    color: '#555',
+  },
+
+  // --- Definição das larguras das colunas ---
+  // (A soma deve ser ~100%)
+  cellId: {
+    width: '10%',
+    textAlign: 'center',
+  },
+  cellName: {
+    width: '40%',
+    paddingLeft: 5,
+  },
+  cellQtd: {
+    width: '15%',
+    textAlign: 'center',
+  },
+  cellPrice: {
+    width: '35%',
+    textAlign: 'right',
+    paddingRight: 5,
+    fontWeight: 'bold',
+  },
+  // --- Estilo para o Link ---
+  linkText: {
+    color: '#007bff', // Cor azul de link
+    textDecorationLine: 'underline',
   },
 });

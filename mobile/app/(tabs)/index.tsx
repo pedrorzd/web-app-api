@@ -1,108 +1,205 @@
-// 1. Importe os componentes corretos do react-native
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-// 2. Use o Link do EXPO ROUTER (que usa 'href', não 'to')
-import { Link } from 'expo-router';
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  FlatList, // O substituto da <table>
+  Alert,    // O substituto do Alert do Bootstrap
+  ActivityIndicator, // O substituto do <Spinner>
+  SafeAreaView,
+  TouchableOpacity // Uma alternativa melhor para botões customizados
+} from 'react-native';
+// Hook para navegação (substituto do <Link>)
+import { useNavigation } from '@react-navigation/native';
 
-// Seus dados (estão perfeitos)
-const PRODUCTS_DATA = [
-  { id: 1, name: 'Teclado', quantity: 8, price: '299,00' },
-  { id: 2, name: 'Mouse sem fio', quantity: 10, price: '250,00' },
-  { id: 3, name: 'Headset', quantity: 5, price: '399,00' },
-];
+const Home = () => {
+  // API (Idêntico)
+  const API = 'https://proweb.leoproti.com.br/produtos';
 
-// REMOVIDOS: 'react-bootstrap/Table' e 'react-router-dom'
+  // Hook de navegação (Substituto do <Link> e useNavigate)
+  const navigation = useNavigation();
 
-export default function HomeScreen() {
-  return (
-      // 3. Use ScrollView para listas e View como contêiner principal
-      <ScrollView style={styles.container}>
+  // --- 1. LÓGICA DE ESTADO (Idêntica) ---
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  // (Removemos o 'message' pois o Alert nativo é uma função, não um componente)
 
-        {/* 4. Tabela é feita com Views. Esta é a linha do CABEÇALHO */}
-        <View style={styles.tableRowHeader}>
-          {/* 5. Estilos vêm do StyleSheet. 'cabecalho' virou 'tableHeader' */}
-          <Text style={[styles.tableHeader, styles.cellId]}>ID</Text>
-          <Text style={[styles.tableHeader, styles.cellName]}>Nome produto</Text>
-          <Text style={[styles.tableHeader, styles.cellQtd]}>Qtd</Text>
-          <Text style={[styles.tableHeader, styles.cellPrice]}>Preço</Text>
+  // --- 2. FUNÇÃO showMessage (Modificada) ---
+  // No React Native, o Alert é uma função pop-up, não um componente na tela.
+  const showMessage = (text, type = 'success') => {
+    Alert.alert(
+        type === 'success' ? 'Sucesso!' : 'Erro!',
+        text
+    );
+  };
+
+  // --- 3. FUNÇÃO fetchProducts (Idêntica) ---
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(API, { mode: 'cors' });
+      const data = await res.json();
+
+      if (res.ok && Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        setProducts([]);
+        showMessage('Erro ao carregar dados da API.', 'danger');
+      }
+    } catch (e) {
+      setProducts([
+        { id: 1, nome: 'Notebook (exemplo)', preco: 2500 },
+        { id: 2, nome: 'Mouse (exemplo)', preco: 89.9 }
+      ]);
+      showMessage('Modo offline: usando dados de exemplo', 'danger');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- 4. useEffect (Idêntico) ---
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // --- 5. FUNÇÃO handleDelete (Modificada) ---
+  // Usamos o Alert.alert nativo para confirmação (substituto do window.confirm)
+  const handleDelete = (id, nome) => {
+    Alert.alert(
+        'Confirmar Exclusão', // Título
+        `Você tem certeza que quer excluir "${nome}"?`, // Mensagem
+        [
+          // Botões
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Excluir',
+            style: 'destructive',
+            // Ação ao pressionar "Excluir"
+            onPress: async () => {
+              setIsLoading(true);
+              try {
+                const res = await fetch(`${API}/${id}`, {
+                  method: 'DELETE',
+                  mode: 'cors'
+                });
+
+                if (res.ok) {
+                  showMessage('Produto excluído com sucesso!', 'success');
+                  fetchProducts(); // Recarrega a lista
+                } else {
+                  const errorData = await res.text();
+                  showMessage(`Erro ao excluir: ${errorData}`, 'danger');
+                }
+              } catch (e) {
+                showMessage('Erro de conexão', 'danger');
+              }
+              // O loading vai parar no 'finally' do fetchProducts
+            }
+          }
+        ]
+    );
+  };
+
+  // --- 6. RENDERIZAÇÃO (JSX Traduzido) ---
+
+  // Função que renderiza cada item da lista (substitui o <tr>)
+  const renderProductItem = ({ item }) => (
+      <View style={styles.itemContainer}>
+        {/* View (div) para as informações */}
+        <View style={styles.itemInfo}>
+          <Text style={styles.itemName}>{item.nome}</Text>
+          <Text style={styles.itemPrice}>
+            R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+          </Text>
         </View>
 
-        {/* 6. Mapeie os dados para criar as LINHAS da tabela */}
-        {PRODUCTS_DATA.map((product) => (
-            <View style={styles.tableRow} key={product.id}>
-
-              {/* Células de dados */}
-              <Text style={[styles.tableCell, styles.cellId]}>{product.id}</Text>
-
-              {/* 7. Célula do Link */}
-              <View style={[styles.tableCell, styles.cellName]}>
-                {/* O Link do Expo usa 'href' e 'asChild' para estilizar o Text */}
-                <Link href={`/produto/${product.id}`} asChild>
-                  <Text style={styles.linkText}>{product.name}</Text>
-                </Link>
-              </View>
-
-              <Text style={[styles.tableCell, styles.cellQtd]}>{product.quantity}</Text>
-              <Text style={[styles.tableCell, styles.cellPrice]}>{product.price}</Text>
-            </View>
-        ))}
-      </ScrollView>
+        {/* View (div) para os botões */}
+        <View style={styles.itemActions}>
+          <Button
+              title="Editar"
+              onPress={() => navigation.navigate('ProdutoDetalhe', { id: item.id })}
+          />
+          <View style={{width: 8}} /> {/* Espaçador */}
+          <Button
+              title="Excluir"
+              color="#dc3545" // Cor vermelha (danger)
+              onPress={() => handleDelete(item.id, item.nome)}
+          />
+        </View>
+      </View>
   );
+
+  // O JSX principal que é retornado
+  return(
+      // SafeAreaView é um <div> que respeita as áreas seguras do celular (notch, etc)
+      <SafeAreaView style={styles.container}>
+        {/* Botão de Cadastro (exemplo) */}
+        <Button
+            title="Cadastrar Novo Produto"
+            onPress={() => navigation.navigate('CadastroProduto')}
+        />
+
+        {/* Feedback de Loading */}
+        {isLoading ? (
+            <ActivityIndicator size="large" color="#0d6efd" style={styles.loader} />
+        ) : (
+            // FlatList é o componente otimizado para renderizar listas (substituto da <table>)
+            <FlatList
+                data={products}
+                renderItem={renderProductItem} // Função que renderiza cada item
+                keyExtractor={item => item.id.toString()} // Define a 'key'
+                ListEmptyComponent={<Text style={styles.emptyText}>Nenhum produto cadastrado</Text>}
+                style={styles.list}
+            />
+        )}
+      </SafeAreaView>
+  )
 }
 
-// 8. Defina TODOS os seus estilos aqui
+// --- 7. ESTILOS (Substituto do Bootstrap/CSS) ---
+// No React Native, usamos StyleSheet para estilizar
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 10,
+    flex: 1, // Ocupa a tela inteira
+    padding: 16,
     backgroundColor: '#fff',
   },
-  tableRowHeader: {
-    flexDirection: 'row', // Alinha os itens lado a lado
-    backgroundColor: '#f1f1f1', // Um fundo para o cabeçalho
-    borderBottomWidth: 2,
-    borderColor: '#ddd',
-    paddingVertical: 8,
+  list: {
+    marginTop: 16,
   },
-  tableRow: {
-    flexDirection: 'row',
+  loader: {
+    marginTop: 40,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+    color: '#888',
+  },
+  itemContainer: {
+    flexDirection: 'row', // Coloca os itens lado a lado
+    justifyContent: 'space-between', // Espaço entre (info | ações)
+    alignItems: 'center',
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: '#eee',
-    paddingVertical: 10,
-    alignItems: 'center', // Alinha verticalmente
+    borderBottomColor: '#eee',
   },
-  tableHeader: {
-    fontWeight: 'bold', // Seu estilo 'cabecalho'
-    fontSize: 15,
+  itemInfo: {
+    flex: 1, // Permite que o nome quebre a linha se for grande
+  },
+  itemName: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#333',
   },
-  tableCell: {
-    fontSize: 14,
-    color: '#555',
+  itemPrice: {
+    fontSize: 16,
+    color: '#666',
   },
-
-  // --- Definição das larguras das colunas ---
-  // (A soma deve ser ~100%)
-  cellId: {
-    width: '10%',
-    textAlign: 'center',
-  },
-  cellName: {
-    width: '40%',
-    paddingLeft: 5,
-  },
-  cellQtd: {
-    width: '15%',
-    textAlign: 'center',
-  },
-  cellPrice: {
-    width: '35%',
-    textAlign: 'right',
-    paddingRight: 5,
-    fontWeight: 'bold',
-  },
-  // --- Estilo para o Link ---
-  linkText: {
-    color: '#007bff', // Cor azul de link
-    textDecorationLine: 'underline',
+  itemActions: {
+    flexDirection: 'row', // Botões lado a lado
   },
 });
+
+export default Home;

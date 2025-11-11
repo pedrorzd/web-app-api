@@ -1,7 +1,7 @@
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Home from "./components/Home.jsx"; // Verifique se o nome está Maiúsculo
 import IdPage from "./components/IdPage.jsx"; // Verifique se o nome está Maiúsculo
-import Cadastro from "./components/Cadastro.js";
+import Cadastro from "./components/Cadastro.jsx";
 
 export const AppRoutes = () => {
     return (

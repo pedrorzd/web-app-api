@@ -1,25 +1,26 @@
 import Card from 'react-bootstrap/Card';
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react'; // 1. Importar os hooks
-import { Alert, Spinner } from 'react-bootstrap'; // 2. Importar componentes de feedback
+import { useState, useEffect } from 'react'; // Importar os hooks
+import { Alert, Spinner } from 'react-bootstrap'; // Importar componentes de feedback
 
-// 3. REMOVER a constante PRODUCTS_DATA
-// const PRODUCTS_DATA = [ ... ];
-
+// 1. Recomendo renomear o componente para algo como 'DetalheAluno'
+// mas manterei 'IdPage' para seguir seu padrão.
 const IdPage = () => {
     // Hooks do React
-    const { id } = useParams(); // Pega o ID da URL (sem mudança)
-    const [product, setProduct] = useState(null); // Guarda o produto vindo da API
+    const { id } = useParams(); // Pega o ID da URL
+
+    // 2. Estados adaptados para 'Aluno'
+    const [aluno, setAluno] = useState(null); // Guarda o aluno vindo da API
     const [isLoading, setIsLoading] = useState(true); // Controla o loading
     const [error, setError] = useState(null); // Guarda mensagens de erro
 
-    // URL da API
-    const API = 'https://proweb.leoproti.com.br/produtos';
+    // URL da API (já está correta)
+    const API = 'https://proweb.leoproti.com.br/alunos';
 
-    // 4. useEffect para buscar os dados quando o componente carregar
+    // 3. useEffect para buscar os dados do aluno
     useEffect(() => {
         // Define a função de busca
-        const fetchProduct = async () => {
+        const fetchAluno = async () => {
             setIsLoading(true);
             setError(null);
 
@@ -28,24 +29,24 @@ const IdPage = () => {
 
                 if (res.ok) {
                     const data = await res.json();
-                    setProduct(data); // Salva o produto no estado
+                    setAluno(data); // Salva o aluno no estado
                 } else {
                     // Trata erros como 404 (Não Encontrado)
-                    setError(`Produto com ID ${id} não encontrado!`);
+                    setError(`Aluno com ID ${id} não encontrado!`);
                 }
             } catch (e) {
                 // Trata erros de rede (API offline, etc)
-                setError('Erro de conexão. Não foi possível carregar o produto.');
+                setError('Erro de conexão. Não foi possível carregar o aluno.');
             } finally {
                 setIsLoading(false); // Para o loading em qualquer cenário
             }
         };
 
-        fetchProduct(); // Executa a função de busca
+        fetchAluno(); // Executa a função de busca
 
     }, [id]); // O [id] garante que o hook rode novamente se o ID na URL mudar
 
-    // 5. Renderização condicional (Loading, Erro, Sucesso)
+    // 4. Renderização condicional (Loading, Erro, Sucesso)
 
     // Estado de Carregamento
     if (isLoading) {
@@ -54,12 +55,12 @@ const IdPage = () => {
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">Carregando...</span>
                 </Spinner>
-                <p>Carregando produto...</p>
+                <p>Carregando dados do aluno...</p>
             </div>
         );
     }
 
-    // Estado de Erro (API fora, produto não encontrado, etc)
+    // Estado de Erro
     if (error) {
         return (
             <Alert variant="danger" className="mt-4">
@@ -71,19 +72,18 @@ const IdPage = () => {
         );
     }
 
-    // Estado de Sucesso (Produto encontrado)
-    // Usamos os nomes dos campos da API (nome, preco, descricao, estoque)
+    // 5. Estado de Sucesso (Aluno encontrado e renderizado no Card)
     return (
         <Card style={{ width: '18rem', margin: '2rem' }}>
             <Card.Body>
-                <Card.Title>{product.nome}</Card.Title>
+                <Card.Title>{aluno.nome}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                    Preço: R$ {Number(product.preco).toFixed(2).replace('.', ',')}
+                    Matrícula: {aluno.matricula}
                 </Card.Subtitle>
                 <Card.Text>
-                    {product.descricao}
+                    <strong>Curso:</strong> {aluno.curso}
                     <br/>
-                    <strong>Em estoque:</strong> {product.estoque} unidades.
+                    <strong>Turma:</strong> {aluno.turma}
                 </Card.Text>
                 <Card.Link as={Link} to="/home">Voltar para lista</Card.Link>
             </Card.Body>

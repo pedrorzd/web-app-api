@@ -8,7 +8,7 @@ export const AppRoutes = () => {
         <BrowserRouter>
             <Routes>
                 <Route path={'/home'} element={<Home />}/>
-                <Route path={'/produto/:id'} element={<IdPage />}/>
+                <Route path={'/aluno/:id'} element={<IdPage />}/>
                 <Route path={'/cadastro'} element={<Cadastro />}/>
 
                 <Route path='*' element={<Navigate to={'/home'}/>}/>

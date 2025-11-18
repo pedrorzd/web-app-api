@@ -5,42 +5,40 @@ import { useState, useEffect } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 
 const Home = () => {
-    // A URL da API, como no seu script.js
-    const API = 'https://proweb.leoproti.com.br/produtos';
+    // A URL da API
+    const API = 'https://proweb.leoproti.com.br/alunos';
 
-    // 1. VARIÁVEIS DE ESTADO
-    // Em vez de manipular o DOM, usamos 'useState' para guardar os dados
-    const [products, setProducts] = useState([]); // Guarda a lista de produtos
+    // 1. VARIÁVEIS DE ESTADO (Adaptadas para Alunos)
+    const [alunos, setAlunos] = useState([]); // Guarda a lista de alunos
     const [isLoading, setIsLoading] = useState(false); // Controla o spinner de loading
     const [message, setMessage] = useState(null); // Guarda a mensagem de sucesso/erro
 
-    // Função utilitária para mostrar mensagens (como no seu script.js)
+    // Função utilitária para mostrar mensagens
     const showMessage = (text, type = 'success') => {
         setMessage({ text, type });
-        // Limpa a mensagem após 3 segundos
         setTimeout(() => {
             setMessage(null);
         }, 3000);
     };
 
-    // 2. FUNÇÃO PARA CARREGAR PRODUTOS (o seu 'carregarProdutos')
-    const fetchProducts = async () => {
-        setIsLoading(true); // Mostra o loading
+    // 2. FUNÇÃO PARA CARREGAR ALUNOS
+    const fetchAlunos = async () => {
+        setIsLoading(true);
         try {
             const res = await fetch(API, { mode: 'cors' });
             const data = await res.json();
 
             if (res.ok && Array.isArray(data)) {
-                setProducts(data); // Coloca os produtos no estado
+                setAlunos(data); // Coloca os alunos no estado
             } else {
-                setProducts([]); // Limpa a lista em caso de erro de API
+                setAlunos([]); // Limpa a lista em caso de erro
                 showMessage('Erro ao carregar dados da API.', 'danger');
             }
         } catch (e) {
-            // Modo offline (como no seu script.js)
-            setProducts([
-                { id: 1, nome: 'Notebook (exemplo)', preco: 2500 },
-                { id: 2, nome: 'Mouse (exemplo)', preco: 89.9 }
+            // Modo offline (com dados de exemplo de Alunos)
+            setAlunos([
+                { id: 1, nome: 'João (exemplo)', turma: '10A', curso: 'Eng. Software', matricula: 123 },
+                { id: 2, nome: 'Maria (exemplo)', turma: '10B', curso: 'Direito', matricula: 456 }
             ]);
             showMessage('Modo offline: usando dados de exemplo', 'danger');
         } finally {
@@ -48,17 +46,15 @@ const Home = () => {
         }
     };
 
-    // 3. EFFECT (o seu 'DOMContentLoaded')
-    // Roda a função 'fetchProducts' UMA vez, quando o componente é montado
+    // 3. EFFECT (Roda UMA vez na montagem)
     useEffect(() => {
-        fetchProducts();
+        fetchAlunos(); // Chama a função de carregar alunos
     }, []); // O array vazio [] significa "rodar só na montagem"
 
-    // 4. FUNÇÃO PARA EXCLUIR PRODUTO (o seu 'excluirProduto')
+    // 4. FUNÇÃO PARA EXCLUIR ALUNO
     const handleDelete = async (id, nome) => {
-        // Confirmação (como no seu script.js)
         if (window.confirm(`Excluir "${nome}"?`)) {
-            setIsLoading(true); // Ativa o loading
+            setIsLoading(true);
             try {
                 const res = await fetch(`${API}/${id}`, {
                     method: 'DELETE',
@@ -66,18 +62,16 @@ const Home = () => {
                 });
 
                 if (res.ok) {
-                    showMessage('Produto excluído com sucesso!', 'success');
-                    // Após excluir, busca a lista de produtos atualizada
-                    fetchProducts();
+                    showMessage('Aluno excluído com sucesso!', 'success');
+                    fetchAlunos(); // Busca a lista de alunos atualizada
                 } else {
                     const errorData = await res.text();
                     showMessage(`Erro ao excluir: ${errorData}`, 'danger');
                 }
             } catch (e) {
                 showMessage('Erro de conexão', 'danger');
+                setIsLoading(false); // Garante que o loading saia em caso de erro de conexão
             }
-            // 'finally' não é necessário aqui, pois 'fetchProducts' já
-            // vai desativar o loading no final
         }
     };
 
@@ -85,46 +79,48 @@ const Home = () => {
 
     // Função helper para renderizar o corpo da tabela
     const renderTableBody = () => {
-        // Se estiver carregando, mostra um Spinner
         if (isLoading) {
             return (
                 <tr>
-                    <td colSpan="4" className="text-center">
+                    {/* Ajustado para 6 colunas */}
+                    <td colSpan="6" className="text-center">
                         <Spinner animation="border" />
                     </td>
                 </tr>
             );
         }
 
-        // Se não houver produtos, mostra mensagem (como no seu script.js)
-        if (!products || products.length === 0) {
+        if (!alunos || alunos.length === 0) {
             return (
                 <tr>
-                    <td colSpan="4" className="text-center text-muted py-4">
-                        Nenhum produto cadastrado
+                    {/* Ajustado para 6 colunas */}
+                    <td colSpan="6" className="text-center text-muted py-4">
+                        Nenhum aluno cadastrado
                     </td>
                 </tr>
             );
         }
 
-        // Se houver produtos, mapeia e cria as linhas
-        return products.map((product) => (
-            <tr key={product.id}>
-                <td>{product.id}</td>
+        // Mapeia os alunos para as linhas da tabela
+        return alunos.map((aluno) => (
+            <tr key={aluno.id}>
+                <td>{aluno.id}</td>
                 <td>
-                    <Link to={`/produto/${product.id}`}>
-                        {product.nome}
+                    {/* Link para uma página de detalhes (se existir) */}
+                    <Link to={`/aluno/${aluno.id}`}>
+                        {aluno.nome}
                     </Link>
                 </td>
-                <td>
-                    {/* Formatando o preço como no seu script.js */}
-                    R$ {Number(product.preco).toFixed(2).replace('.', ',')}
-                </td>
+                {/* Novas colunas de Aluno */}
+                <td>{aluno.turma}</td>
+                <td>{aluno.curso}</td>
+                <td>{aluno.matricula}</td>
                 <td>
                     {/* Botões de Ação */}
                     <Button
                         as={Link}
-                        to={`/form.html?id=${product.id}`} // Link para form.html (como no script.js)
+                        // Ajustei o link para um padrão React Router (ex: /editar/1)
+                        to={`/editar/${aluno.id}`}
                         variant="primary"
                         size="sm"
                         className="me-2"
@@ -134,7 +130,7 @@ const Home = () => {
                     <Button
                         variant="danger"
                         size="sm"
-                        onClick={() => handleDelete(product.id, product.nome)}
+                        onClick={() => handleDelete(aluno.id, aluno.nome)}
                     >
                         Excluir
                     </Button>
@@ -154,23 +150,25 @@ const Home = () => {
             )}
 
             <div className="d-flex justify-content-end mb-3">
+                {/* Link para o seu componente CadastroAluno */}
                 <Button as={Link} to="/cadastro" variant="success">
-                    Cadastrar Novo Produto
+                    Cadastrar Novo Aluno
                 </Button>
             </div>
 
             <Table striped bordered hover>
                 <thead>
                 <tr>
-                    {/* Corrigi os headers para bater com os dados (ID, Nome, Preço, Ações) */}
+                    {/* Cabeçalhos atualizados para Aluno */}
                     <th className="cabecalho">ID</th>
-                    <th className="cabecalho">Nome produto</th>
-                    <th className="cabecalho">Preço</th>
+                    <th className="cabecalho">Nome</th>
+                    <th className="cabecalho">Turma</th>
+                    <th className="cabecalho">Curso</th>
+                    <th className="cabecalho">Matrícula</th>
                     <th className="cabecalho">Ações</th>
                 </tr>
                 </thead>
                 <tbody>
-                {/* Chama a função que decide o que renderizar no corpo */}
                 {renderTableBody()}
                 </tbody>
             </Table>

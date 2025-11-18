@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Alert, Spinner, Container } from 'react-bootstrap';
 
-const CadastroProduto = () => {
+// 1. Renomeei o componente de CadastroProduto para CadastroAluno
+const CadastroAluno = () => {
     // URL da API
-    const API = 'https://proweb.leoproti.com.br/produtos';
+    const API = 'https://proweb.leoproti.com.br/alunos';
 
     // Hook para redirecionar após o cadastro
     const navigate = useNavigate();
 
-    // Estados para os campos do formulário
+    // Estados para os campos do formulário (agora corretos para Aluno)
+    // Removi o 'id', pois ele não é enviado no cadastro (POST)
     const [nome, setNome] = useState('');
-    const [preco, setPreco] = useState('');
-    const [estoque, setEstoque] = useState('');
-    const [descricao, setDescricao] = useState('');
+    const [turma, setTurma] = useState('');
+    const [curso, setCurso] = useState('');
+    const [matricula, setMatricula] = useState('');
 
     // Estados de feedback
     const [isLoading, setIsLoading] = useState(false);
@@ -33,12 +35,13 @@ const CadastroProduto = () => {
 
         setIsLoading(true);
 
-        // Monta o objeto do novo produto com os dados do estado
-        const novoProduto = {
+        // 2. Montei o objeto do *novoAluno* com os dados de estado corretos
+        // (Assumi que matrícula é um número, como 'estoque' era no seu código original)
+        const novoAluno = {
             nome: nome,
-            preco: parseFloat(preco), // Converte o texto "preco" para número
-            estoque: parseInt(estoque), // Converte o texto "estoque" para número
-            descricao: descricao
+            turma: turma,
+            curso: curso,
+            matricula: parseInt(matricula) // Converte a matrícula para número
         };
 
         try {
@@ -49,12 +52,13 @@ const CadastroProduto = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(novoProduto) // Envia o objeto como JSON
+                body: JSON.stringify(novoAluno) // 3. Enviei o novoAluno
             });
 
             if (res.ok) {
                 // Sucesso
-                showMessage('Produto cadastrado com sucesso!', 'success');
+                // 4. Mudei a mensagem de sucesso
+                showMessage('Aluno cadastrado com sucesso!', 'success');
                 // Redireciona para a home após 1.5 segundos
                 setTimeout(() => {
                     navigate('/home');
@@ -73,10 +77,10 @@ const CadastroProduto = () => {
         }
     };
 
-    // Renderização do componente (o que aparece na tela)
+    // 5. Renderização do componente (atualizei todo o formulário)
     return (
         <Container className="mt-4">
-            <h2>Cadastrar Novo Produto</h2>
+            <h2>Cadastrar Novo Aluno</h2>
             <hr />
 
             {/* Alerta de feedback (sucesso ou erro) */}
@@ -88,48 +92,47 @@ const CadastroProduto = () => {
 
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formNome">
-                    <Form.Label>Nome do Produto</Form.Label>
+                    <Form.Label>Nome do Aluno</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Ex: Teclado Mecânico"
+                        placeholder="Ex: João da Silva"
                         value={nome}
-                        onChange={(e) => setNome(e.target.value)} // Atualiza o estado 'nome'
+                        onChange={(e) => setNome(e.target.value)}
                         required
                     />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formPreco">
-                    <Form.Label>Preço (R$)</Form.Label>
+                <Form.Group className="mb-3" controlId="formTurma">
+                    <Form.Label>Turma</Form.Label>
                     <Form.Control
-                        type="number"
-                        step="0.01" // Permite casas decimais
-                        placeholder="Ex: 299.90"
-                        value={preco}
-                        onChange={(e) => setPreco(e.target.value)}
+                        type="text"
+                        placeholder="Ex: 10A"
+                        value={turma}
+                        onChange={(e) => setTurma(e.target.value)}
                         required
                     />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formEstoque">
-                    <Form.Label>Estoque (unidades)</Form.Label>
+                <Form.Group className="mb-3" controlId="formCurso">
+                    <Form.Label>Curso</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Ex: Engenharia de Software"
+                        value={curso}
+                        onChange={(e) => setCurso(e.target.value)}
+                        required
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formMatricula">
+                    <Form.Label>Matrícula</Form.Label>
                     <Form.Control
                         type="number"
                         step="1" // Apenas números inteiros
-                        placeholder="Ex: 50"
-                        value={estoque}
-                        onChange={(e) => setEstoque(e.target.value)}
+                        placeholder="Ex: 123456"
+                        value={matricula}
+                        onChange={(e) => setMatricula(e.target.value)}
                         required
-                    />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="formDescricao">
-                    <Form.Label>Descrição</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        placeholder="Descrição detalhada do produto..."
-                        value={descricao}
-                        onChange={(e) => setDescricao(e.target.value)}
                     />
                 </Form.Group>
 
@@ -140,7 +143,7 @@ const CadastroProduto = () => {
                             {' '}Salvando...
                         </>
                     ) : (
-                        'Cadastrar Produto'
+                        'Cadastrar Aluno' // 6. Mudei o texto do botão
                     )}
                 </Button>
             </Form>
@@ -148,4 +151,4 @@ const CadastroProduto = () => {
     );
 };
 
-export default CadastroProduto;
+export default CadastroAluno; // 7. Mudei o export
